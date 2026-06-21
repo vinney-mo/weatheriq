@@ -4,9 +4,11 @@ import { ConditionIcon } from "@/components/ConditionIcon";
 export function WeatherCard({
   location,
   current,
+  aiSummary,
 }: {
   location: GeoInfo;
   current: CurrentConditions;
+  aiSummary?: string;
 }) {
   const place = [location.city, location.region, location.country].filter(Boolean).join(", ");
 
@@ -29,6 +31,9 @@ export function WeatherCard({
         <Stat label="Humidity" value={`${current.humidity}%`} />
         <Stat label="Wind" value={`${current.windKph} km/h`} />
       </div>
+      {aiSummary && (
+        <p className="mt-4 border-t border-hairline pt-3 text-sm text-slate-300">{aiSummary}</p>
+      )}
     </div>
   );
 }

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     let snapshot;
 
     if (detect === "true") {
-      snapshot = await getWeatherByIp("auto");
+      snapshot = await getWeatherByIp("auto", 7, true);
     } else if (city) {
       const geo = await geocodeCity(city);
       if (!geo) {

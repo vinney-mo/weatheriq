@@ -138,8 +138,8 @@ export async function getWeatherByCoords(
  * Available on all plans (unlike /v1/ip-lookup, which is Pro+), so this is
  * the endpoint we use for "detect my location" rather than ip-lookup.
  */
-export async function getWeatherByIp(ip = "auto", days = 7): Promise<WeatherSnapshot> {
-  const params = new URLSearchParams({ ip, days: String(days), ai: "false" });
+export async function getWeatherByIp(ip = "auto", days = 3, ai = true): Promise<WeatherSnapshot> {
+  const params = new URLSearchParams({ ip, days: String(days), ai: String(ai) });
   const url = `${BASE_URL}/v1/weather-geo?${params.toString()}`;
 
   const res = await fetch(url, {

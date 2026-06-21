@@ -14,7 +14,6 @@ interface WeatherResponse {
 
 export default function HomePage() {
   const [data, setData] = useState<WeatherResponse | null>(null);
-  const [usage, setUsage] = useState<UsageStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -65,7 +64,11 @@ export default function HomePage() {
 
       {data && !loading && (
         <div className="grid gap-4 sm:grid-cols-2">
-          <WeatherCard location={data.snapshot.location} current={data.snapshot.current} />
+          <WeatherCard
+            location={data.snapshot.location}
+            current={data.snapshot.current}
+            aiSummary={data.snapshot.aiSummary}
+          />
           <InsightCard recommendations={data.recommendations} />
           <div className="sm:col-span-2">
             <ForecastCard forecast={data.snapshot.forecast} />
