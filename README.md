@@ -35,7 +35,7 @@ cd weatheriq
 npm install
 ```
 
-Create `.env.local` in the project root:
+Create `.env` in the project root:
 
 ```env
 WEATHER_AI_API_KEY=your_api_key
