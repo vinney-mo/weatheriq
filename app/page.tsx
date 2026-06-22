@@ -416,7 +416,9 @@ function TodayView({ data, units }: { data: RawWeatherResponse; units: Units }) 
   );
 }
 
-
+// ════════════════════════════════════════════════════════════════════════════
+// FORECAST VIEW
+// ════════════════════════════════════════════════════════════════════════════
 function ForecastView({
   data, units, selectedDay, onSelectDay,
 }: {
@@ -427,42 +429,73 @@ function ForecastView({
 }) {
   const tu = tempUnit(units);
   const wu = windUnit(units);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (dir: "left" | "right") => {
+    const el = sliderRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "left" ? -200 : 200, behavior: "smooth" });
+  };
 
   return (
     <div className="space-y-5">
 
       {/* Day cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-        {data.daily.map((day) => {
-          const isSel = selectedDay?.date === day.date;
-          return (
-            <button
-              key={day.date}
-              onClick={() => onSelectDay(day)}
-              className={[
-                "rounded-xl border p-3 text-left transition-all",
-                isSel
-                  ? "border-amber bg-amber/10"
-                  : "border-hairline bg-panel hover:border-teal/50",
-              ].join(" ")}
-            >
-              <p className="font-mono text-[11px] text-ink2">{fmtDay(day.date)}</p>
-              <div className="mt-2 flex justify-center">
-                <ConditionIcon icon={day.icon} alt={condLabel(day.condition_code)} size={36} />
-              </div>
-              <p className="mt-2 font-mono text-xs text-center text-slate-300">
-                {condLabel(day.condition_code)}
-              </p>
-              <div className="mt-2 flex justify-between font-mono text-xs">
-                <span className="text-slate-50 font-semibold">{Math.round(day.temp_max)}{tu}</span>
-                <span className="text-ink2">{Math.round(day.temp_min)}{tu}</span>
-              </div>
-              <p className="mt-1 font-mono text-[11px] text-blue-400 text-center">
-                {day.precipitation_probability}% rain
-              </p>
-            </button>
-          );
-        })}
+      <div className="relative">
+        {/* Arrow buttons */}
+        <button
+          onClick={() => scroll("left")}
+          aria-label="Scroll left"
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-panel text-ink2 shadow hover:text-slate-100 transition-colors"
+        >
+          ‹
+        </button>
+        <button
+          onClick={() => scroll("right")}
+          aria-label="Scroll right"
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-panel text-ink2 shadow hover:text-slate-100 transition-colors"
+        >
+          ›
+        </button>
+
+        {/* Scrollable track */}
+        <div
+          ref={sliderRef}
+          className="flex gap-3 overflow-x-auto scroll-smooth px-1 py-1"
+          style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none" }}
+        >
+          {data.daily.map((day) => {
+            const isSel = selectedDay?.date === day.date;
+            return (
+              <button
+                key={day.date}
+                onClick={() => onSelectDay(day)}
+                style={{ scrollSnapAlign: "start", minWidth: "140px", flex: "0 0 140px" }}
+                className={[
+                  "rounded-xl border p-4 text-left transition-all",
+                  isSel
+                    ? "border-amber bg-amber/10"
+                    : "border-hairline bg-panel hover:border-teal/50",
+                ].join(" ")}
+              >
+                <p className="font-mono text-[11px] text-ink2 whitespace-nowrap">{fmtDay(day.date)}</p>
+                <div className="mt-3 flex justify-center">
+                  <ConditionIcon icon={day.icon} alt={condLabel(day.condition_code)} size={40} />
+                </div>
+                <p className="mt-2 font-mono text-[11px] text-center text-slate-300 leading-tight">
+                  {condLabel(day.condition_code)}
+                </p>
+                <div className="mt-3 flex justify-between font-mono text-xs">
+                  <span className="text-slate-50 font-semibold">{Math.round(day.temp_max)}{tu}</span>
+                  <span className="text-ink2">{Math.round(day.temp_min)}{tu}</span>
+                </div>
+                <p className="mt-1 font-mono text-[10px] text-blue-400 text-center">
+                  {day.precipitation_probability}% rain
+                </p>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Selected day detail */}
@@ -491,7 +524,7 @@ function ForecastView({
               <div className="rounded-xl border border-hairline bg-panel overflow-hidden">
                 <div className="px-5 pt-4 pb-2">
                   <p className="font-mono text-[11px] uppercase tracking-widest text-ink2">
-                    Hourly {fmtDay(selectedDay.date)}
+                    Hourly - {fmtDay(selectedDay.date)}
                   </p>
                 </div>
                 <div className="overflow-x-auto">

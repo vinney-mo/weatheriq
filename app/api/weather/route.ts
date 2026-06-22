@@ -3,21 +3,42 @@ import { getWeatherGeo, getWeather, WeatherAIError } from "@/services/weather-ai
 
 export const dynamic = "force-dynamic";
 
+/** Extract the real client IP from standard proxy headers */
+function getClientIp(req: NextRequest): string | null {
+  // Prefer the first forwarded address (most proxies prepend real IP)
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const first = (forwarded.split(",")[0] ?? "").trim();
+    if (first) return first;
+  }
+  return (
+    req.headers.get("x-real-ip") ??
+    req.headers.get("cf-connecting-ip") ??   // Cloudflare
+    req.headers.get("true-client-ip") ??      // Akamai/Cloudflare Enterprise
+    null
+  );
+}
+
 export async function GET(req: NextRequest) {
-  const sp     = new URL(req.url).searchParams;
-  const mode   = sp.get("mode");   // "today" | "forecast"
-  const lat    = sp.get("lat");
-  const lon    = sp.get("lon");
-  const ai     = sp.get("ai") !== "false";
-  const units  = sp.get("units") ?? "imperial";
-  const days   = parseInt(sp.get("days") ?? "7", 10);
+  const sp    = new URL(req.url).searchParams;
+  const mode  = sp.get("mode");
+  const lat   = sp.get("lat");
+  const lon   = sp.get("lon");
+  const ai    = sp.get("ai") !== "false";
+  const units = sp.get("units") ?? "imperial";
+  const days  = parseInt(sp.get("days") ?? "7", 10);
 
   try {
     if (mode === "today") {
-      // lat/lon provided (city selected), use them; otherwise auto-detect IP
-      const data = lat && lon
-        ? await getWeatherGeo({ lat: parseFloat(lat), lon: parseFloat(lon), days: 3, ai, units })
-        : await getWeatherGeo({ ip: "auto", days: 3, ai, units });
+      let data;
+      if (lat && lon) {
+        // City explicitly selected
+        data = await getWeatherGeo({ lat: parseFloat(lat), lon: parseFloat(lon), days: 3, ai, units });
+      } else {
+        // Auto-detect: resolve real client IP from headers, fall back to "auto"
+        const clientIp = getClientIp(req) ?? "auto";
+        data = await getWeatherGeo({ ip: clientIp, days: 3, ai, units });
+      }
       return NextResponse.json(data);
     }
 
