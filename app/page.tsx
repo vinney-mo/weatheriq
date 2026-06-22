@@ -295,6 +295,9 @@ export default function HomePage() {
   );
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+// TODAY VIEW
+// ════════════════════════════════════════════════════════════════════════════
 function TodayView({ data, units }: { data: RawWeatherResponse; units: Units }) {
   const { current, daily, hourly, ai_summary } = data;
   const todayStr = current.time.slice(0, 10);
